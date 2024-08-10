@@ -25,6 +25,7 @@
             font-size: 16px;
             box-sizing: border-box;
             margin-bottom: 10px;
+            resize: vertical; /* 사용자가 수직으로 조정할 수 있게 함 */
         }
         button {
             padding: 10px 20px;
@@ -39,13 +40,27 @@
             background-color: #ccc;
             cursor: not-allowed;
         }
+        .char-count {
+            font-size: 14px;
+            color: #555;
+        }
+        .warning {
+            color: #FF0000;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <textarea id="note" placeholder="메모를 입력하세요..."></textarea>
+    <div class="char-count">
+        <span id="charCount">0</span> / 2000
+    </div>
     <button id="copyLinkBtn">메모 링크 복사하기</button>
+    <div id="warning" class="warning"></div>
 
     <script>
+        const MAX_LENGTH = 2000;
+
         function updateLink() {
             const text = document.getElementById('note').value;
             const encodedText = btoa(unescape(encodeURIComponent(text)));
@@ -63,6 +78,7 @@
                 document.getElementById('note').value = text;
             }
             updateLink(); // 초기 로드 시 링크 업데이트
+            updateCharCount(); // 초기 로드 시 문자 수 업데이트
         }
 
         function copyToClipboard(text) {
@@ -73,7 +89,21 @@
             });
         }
 
-        document.getElementById('note').addEventListener('input', updateLink);
+        function updateCharCount() {
+            const textArea = document.getElementById('note');
+            const text = textArea.value;
+            const charCount = Math.min(text.length, MAX_LENGTH); // 최대 길이로 자르기
+            document.getElementById('charCount').textContent = charCount;
+            if (text.length > MAX_LENGTH) {
+                textArea.value = text.slice(0, MAX_LENGTH); // 2000자 초과 시 잘라내기
+                document.getElementById('warning').textContent = `메모는 ${MAX_LENGTH}자 이하로 작성해 주세요.`;
+            } else {
+                document.getElementById('warning').textContent = '';
+            }
+            updateLink(); // 문자 수 업데이트 후 링크 업데이트
+        }
+
+        document.getElementById('note').addEventListener('input', updateCharCount);
 
         document.getElementById('copyLinkBtn').addEventListener('click', () => {
             const link = document.getElementById('copyLinkBtn').dataset.link;
