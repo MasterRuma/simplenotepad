@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>간단한 메모장</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        textarea {
+            width: 90%;
+            height: 60vh;
+            padding: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <textarea id="note" placeholder="메모를 입력하세요..."></textarea>
+    <button id="copyLinkBtn">메모 링크 복사하기</button>
+
+    <script>
+        function updateLink() {
+            const text = document.getElementById('note').value;
+            const encodedText = btoa(unescape(encodeURIComponent(text)));
+            const url = new URL(window.location.href);
+            url.searchParams.set('note', encodedText);
+            history.replaceState(null, '', url.toString());
+            document.getElementById('copyLinkBtn').dataset.link = url.toString();
+        }
+
+        function loadNote() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedText = urlParams.get('note');
+            if (encodedText) {
+                const text = decodeURIComponent(escape(atob(encodedText)));
+                document.getElementById('note').value = text;
+            }
+            updateLink(); // 초기 로드 시 링크 업데이트
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('링크가 클립보드에 복사되었습니다!');
+            }).catch(err => {
+                console.error('클립보드 복사 실패:', err);
+            });
+        }
+
+        document.getElementById('note').addEventListener('input', updateLink);
+
+        document.getElementById('copyLinkBtn').addEventListener('click', () => {
+            const link = document.getElementById('copyLinkBtn').dataset.link;
+            if (link) {
+                copyToClipboard(link);
+            }
+        });
+
+        window.addEventListener('load', loadNote);
+    </script>
+</body>
+</html>
