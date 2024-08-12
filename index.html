@@ -2,6 +2,8 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <link rel="canonical" href="https://masterruma.github.io/simplenotepad/index.html">
+    <meta name="description" content="메모를 간단하게 하고 간단하게 링크로 공유해 봅시다.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>간단한 메모장</title>
     <style>
@@ -48,6 +50,20 @@
             color: #FF0000;
             font-size: 14px;
         }
+        .converter {
+            padding: 5px 10px;
+            font-size: 14px;
+            text-align: center;
+            margin: 0 auto;
+        }
+        .textconvert {
+            width: 50vw;
+            padding: 7px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -57,7 +73,10 @@
     </div>
     <button id="copyLinkBtn">메모 링크 복사하기</button>
     <div id="warning" class="warning"></div>
-
+    <div>
+        <input class="textconvert" type="text" id="convert" placeholder="앱 사용중인 경우 링크 붙여넣기" />
+        <button onclick="Converter()" class="converter">변환</button>
+    </div>
     <script>
         const MAX_LENGTH = 2000;
 
@@ -101,6 +120,27 @@
                 document.getElementById('warning').textContent = '';
             }
             updateLink(); // 문자 수 업데이트 후 링크 업데이트
+        }
+
+        function Converter() {
+            const decrypt = document.getElementById("convert").value;
+            const validPrefix = "https://masterruma.github.io/simplenotepad/?note=";
+
+            if (!decrypt.startsWith(validPrefix)) {
+                document.getElementById('warning').textContent = "유효한 주소가 아닙니다.";
+            } else {
+                document.getElementById('warning').textContent = '';
+                
+                try {
+                    const decrypt_base64 = decrypt.split("/?note=")[1];
+                    const decodedBase64 = decodeURIComponent(decrypt_base64);
+                    const text = decodeURIComponent(escape(atob(decodedBase64)));
+                    document.getElementById("note").value = text;
+                    updateCharCount();  // 변환 후 문자 수 업데이트
+                } catch (error) {
+                    document.getElementById('warning').textContent = "유효한 주소가 아닙니다. 다시 확인해 주세요.";
+                }
+            }
         }
 
         document.getElementById('note').addEventListener('input', updateCharCount);
